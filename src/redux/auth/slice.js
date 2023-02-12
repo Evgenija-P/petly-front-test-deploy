@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { register, logIn, logOut, refreshUser } from './operations';
+import { register, logIn, logOut, refreshUser, addAvatar, updateUserInformation } from './operations';
 
 const initialState = {
   user: {},
@@ -42,7 +42,7 @@ const authSlice = createSlice({
         state.isLoading = false;
       })
       .addCase(logIn.rejected, (state, action) => {
-        state.isLoading = true;
+        state.isLoading = false;
         state.error = action.payload;
       })
 
@@ -69,12 +69,36 @@ const authSlice = createSlice({
       .addCase(refreshUser.fulfilled, (state, action) => {
         state.user = action.payload.data;
         state.isLoggedIn = true;
+        state.isRefreshing = false;
         state.isLoading = false;
+        state.isRefreshing = false;
       })
       .addCase(refreshUser.rejected, (state, action) => {
         state.isRefreshing = false;
         state.isLoading = false;
         state.error = action.payload;
-      }),
+      })
+      
+      //addAvatar
+      .addCase(addAvatar.fulfilled, ({ user, isLoggedIn }, { payload }) => {
+        user.avatarURL = payload.data.avatarURL;
+        isLoggedIn = true;
+      })
+      .addCase(addAvatar.rejected, (state, action) => {
+        state.error = action.payload
+      })
+  
+      //changeUserInformation
+      .addCase(updateUserInformation.fulfilled, ({ user, isLoggedIn }, { payload }) => {
+        user.name = payload.data.name;
+        user.email = payload.data.email;
+        user.birthday = payload.data.birthday;
+        user.phone = payload.data.phone;
+        user.city = payload.data.city;
+        isLoggedIn = true;
+      })
+      .addCase(updateUserInformation.rejected, (state, action) => {
+        state.error = action.payload
+      })
 });
 export const authReducer = authSlice.reducer;
